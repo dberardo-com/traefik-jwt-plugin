@@ -282,7 +282,13 @@ func (jwtPlugin *JwtPlugin) ParseKeys(certificates []string) error {
 		} else if u, err := url.ParseRequestURI(certificate); err == nil {
 			jwtPlugin.jwkEndpoints = append(jwtPlugin.jwkEndpoints, u)
 		} else {
-			return fmt.Errorf("Invalid configuration, expecting a certificate, public key or JWK URL")
+			// Allow HS* shared secrets to be supplied directly via `keys`.
+			// (Also safe with other algs because verify funcs type-check.)
+			secretBytes, err := certificate
+			if err != nil {
+				return err
+			}
+			jwtPlugin.keys[strconv.Itoa(len(jwtPlugin.keys))] = secretBytes
 		}
 	}
 	return nil
