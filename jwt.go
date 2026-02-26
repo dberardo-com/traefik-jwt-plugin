@@ -282,13 +282,11 @@ func (jwtPlugin *JwtPlugin) ParseKeys(certificates []string) error {
 		} else if u, err := url.ParseRequestURI(certificate); err == nil {
 			jwtPlugin.jwkEndpoints = append(jwtPlugin.jwkEndpoints, u)
 		} else {
-			// Allow HS* shared secrets to be supplied directly via `keys`.
-			// (Also safe with other algs because verify funcs type-check.)
-			secretBytes, err := certificate
-			if err != nil {
-				return err
-			}
+			// Allow HS* shared secret to be supplied directly via `keys`
+			// Store raw string bytes as HMAC key
+			secretBytes := []byte(certificate)
 			jwtPlugin.keys[strconv.Itoa(len(jwtPlugin.keys))] = secretBytes
+			continue
 		}
 	}
 	return nil
